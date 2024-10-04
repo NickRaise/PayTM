@@ -1,5 +1,4 @@
 const mongoose = require("mongoose")
-
 // My original naive code
 // const userSchema = new mongoose.Schema({
 //     first_name: String,
@@ -8,9 +7,9 @@ const mongoose = require("mongoose")
 //     password: String,
 // })
 
-const DB_URL = ''
+const DB_URL = process.env.DB_URL
 async function connect_dp() {
-    await mongoose.connect('DB_URL')
+    await mongoose.connect(DB_URL)
 }
 
 connect_dp().catch(err => console.log(err))
@@ -36,27 +35,35 @@ const userSchema = new mongoose.Schema({
 
     first_name: {
         type: String,
-        required: True,
+        required: true,
         trim: true,
         maxLength: 20,
     },
 
     last_name: {
         type: String,
-        required: True,
+        required: true,
         trim: true,
         maxLength: 20,
+    },
+
+    email: {
+        type: String,
+        required: true,
+        trim: true,
+        unique: true,
+        lowercase: true,
     }
 })
 
 const accountSchema = new mongoose.Schema({
     userID: {
-        type: Schema.Types.ObjectId,  // mongoDB id type
+        type: mongoose.Schema.Types.ObjectId,  // mongoDB id type
         ref: 'userSchema',
         required: true,
     },
     balance: {
-        type: number,
+        type: Number,
         required: true
     }
 })

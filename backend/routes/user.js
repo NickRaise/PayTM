@@ -4,9 +4,10 @@ const { userModel, accountModel } = require("../models/user");
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = require("../utils/config");
 const zod = require("zod");
-const authMiddleware = require("../utils/middlewares");
+const { authMiddleware } = require("../utils/middlewares");
 
 const signupSchema = zod.object({
+    username: zod.string(),
     first_name: zod.string(),
     last_name: zod.string(),
     email: zod.string(),
@@ -31,10 +32,7 @@ router.put("/", authMiddleware, async (req, res) => {
         return res.status(411).json({
             message: "Error while updating information",
         });
-
-    await userModel.updateOne(userData, {
-        _id: req.userID,
-    });
+    await userModel.findByIdAndUpdate(req.userID, userData)
 
     res.json({
         message: "Updated successfully!",
@@ -48,9 +46,8 @@ router.post("/signup", async (req, res) => {
         return res.status(411).json({
             message: "Email already taken / Incorrect inputs",
         });
-
     const doesExist = await userModel.findOne({
-        username: userData.username,
+        email: userData.email,
     });
 
     if (doesExist)
@@ -59,27 +56,25 @@ router.post("/signup", async (req, res) => {
         });
 
     const newUser = await userModel.create(userData);
-
-    await accountModel.create({
-        userId: newUser._id,
+    const userAccount = await accountModel.create({
+        userID: newUser._id,
         balance: 1 + Math.random() * 1000
     })
-
-    const userToken = jwt.sign({ userID: newUser._id }, JWT_SECRET);
+    const userToken = jwt.sign({ userID: newUser.id }, JWT_SECRET);
     res.status(200).json({
         message: "User created successfully",
         token: userToken,
     });
 });
 
-router.post("/signin", (req, res) => {
+router.post("/signin", async (req, res) => {
     const userData = req.body;
     const { success } = signinSchema.safeParse(userData);
 
     if (!success)
         return res.status(411).json({ message: "Error while logging in" });
 
-    const foundUser = userModel.findOne({ username: userData.username });
+    const foundUser = await userModel.findOne({ username: userData.username });
 
     if (foundUser && foundUser.password === userData.password) {
         const userToken = jwt.sign(
@@ -95,9 +90,11 @@ router.post("/signin", (req, res) => {
     } else return res.status(411).json({ message: "Error while logging in" });
 });
 
-router.get("/bulk", (res, req) => {
-    const { filter } = res.body || "";
-    const foundUser = userModel({
+router.get("/bulk", async (req, res) => {
+    const data = req.query.filter;
+    const filter = data || "";
+    console.log("here->", filter)
+    const foundUser = await userModel.find({
         $or: [
             {
                 first_name: {
@@ -125,7 +122,6 @@ router.get("/bulk", (res, req) => {
     // return res.status(203).json({
     //     users: foundUser,
     // });
-
     res.status(200).json({
         users: foundUser.map(user => ({
             username: user.username,
