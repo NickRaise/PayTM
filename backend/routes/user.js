@@ -2,9 +2,10 @@ const express = require("express");
 const router = express.Router();
 const { userModel, accountModel } = require("../models/user");
 const jwt = require("jsonwebtoken");
-const JWT_SECRET = require("../utils/config");
 const zod = require("zod");
 const { authMiddleware } = require("../utils/middlewares");
+
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const signupSchema = zod.object({
     username: zod.string(),
