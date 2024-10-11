@@ -51,10 +51,11 @@ router.post("/signup", async (req, res) => {
         email: userData.email,
     });
 
-    if (doesExist)
+    if (doesExist) {
         return res.status(411).json({
             message: "Email already taken / Incorrect inputs",
         });
+    }
 
     const newUser = await userModel.create(userData);
     const userAccount = await accountModel.create({
@@ -71,9 +72,8 @@ router.post("/signup", async (req, res) => {
 router.post("/signin", async (req, res) => {
     const userData = req.body;
     const { success } = signinSchema.safeParse(userData);
-
     if (!success)
-        return res.status(411).json({ message: "Error while logging in" });
+        return res.status(411).json({ message: "Incorrect credentials!" });
 
     const foundUser = await userModel.findOne({ username: userData.username });
 
@@ -88,7 +88,7 @@ router.post("/signin", async (req, res) => {
             message: "Signin successful",
             token: userToken,
         });
-    } else return res.status(411).json({ message: "Error while logging in" });
+    } else return res.status(411).json({ message: "Incorrect credentials!" });
 });
 
 router.get("/bulk", async (req, res) => {
@@ -110,19 +110,6 @@ router.get("/bulk", async (req, res) => {
         ],
     });
 
-    //          my approach
-    // if (!foundUser)
-    //     return res.status(403).json({
-    //         message: "No user with the given name!",
-    //     });
-
-    // foundUser.forEach((userData) => {
-    //     userData.password = undefined;
-    // });
-
-    // return res.status(203).json({
-    //     users: foundUser,
-    // });
     res.status(200).json({
         users: foundUser.map(user => ({
             username: user.username,

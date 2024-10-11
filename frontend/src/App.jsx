@@ -3,8 +3,11 @@ import { Signup } from "./pages/Signup"
 import { Signin } from "./pages/Signin"
 import { Dashboard } from "./pages/Dashboard"
 import { Sendmoney } from "./pages/Sendmoney"
+import { useState } from "react"
 
 function App() {
+  // const [isLogin, setIsLogin] = useState(false)
+  
   return (
     <>
       <BrowserRouter>

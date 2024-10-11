@@ -3,7 +3,6 @@ const cors = require("cors")
 require("dotenv").config()
 
 const mainRouter = require("./routes/index")
-const JWT_SECRET = require("./utils/config")
 
 const app = express()
 
