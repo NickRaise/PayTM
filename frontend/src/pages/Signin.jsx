@@ -15,9 +15,9 @@ export const Signin = () => {
 
     useEffect(() => {
         const isSignedin = localStorage.getItem("token")
-        if (!isSignedin) 
-            return navigate("/dashboard")
-    }, [navigate])
+        if (isSignedin) 
+            navigate("/dashboard")
+    }, [])
 
     const signinUser = async () => {
         console.log("Send Signin")
@@ -29,7 +29,7 @@ export const Signin = () => {
             console.log(res)
             localStorage.setItem("token", res.data.token)
             setErrMsg("")
-            return navigate("/dashboard")
+            navigate("/dashboard")
         } catch (res) {
             console.log(res)
             if (res.response.status == 411)

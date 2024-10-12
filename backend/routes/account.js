@@ -9,10 +9,14 @@ router.post("/transfer", authMiddleware, async (req, res) => {
     session.startTransaction();
     const transferInfo = req.body;
     const senderId = req.userID;
+    console.log(senderId)
+    // return res.send("working")
 
     // get sender balance
-    const senderAccount = accountModel.find({ userID: senderId });
+    const senderAccount = await accountModel.findOne({ userID: senderId });
     // error if not enough balance
+    console.log(senderAccount)
+    console.log(senderAccount.balance, "################", transferInfo.amount)
     if (senderAccount.balance < transferInfo.amount) {
         session.abortTransaction();
         return res.status(400).json({ message: "Insufficient balance" });

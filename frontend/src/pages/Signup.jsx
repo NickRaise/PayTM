@@ -18,9 +18,9 @@ export const Signup = () => {
 
     useEffect(() => {
         const isSignedin = localStorage.getItem("token")
-        if (!isSignedin) 
-            return navigate("/dashboard")
-    }, [navigate])
+        if (isSignedin) 
+            navigate("/dashboard")
+    }, [])
 
     const signupUser = async () => {
         console.log("send")

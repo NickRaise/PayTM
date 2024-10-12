@@ -40,6 +40,21 @@ router.put("/", authMiddleware, async (req, res) => {
     });
 });
 
+router.get("/me", authMiddleware, async (req, res) => {
+    const userData = await userModel.findById(req.userID)
+    const userAccount = await accountModel.findOne({
+        userID: userData._id
+    })
+    console.log(userAccount)
+    res.json({
+        userInfo: {
+            first_name: userData.first_name,
+            last_name: userData.last_name,
+            balance: userAccount.balance
+        }
+    })
+})
+
 router.post("/signup", async (req, res) => {
     const userData = req.body;
     const { success } = signupSchema.safeParse(userData);
@@ -91,34 +106,42 @@ router.post("/signin", async (req, res) => {
     } else return res.status(411).json({ message: "Incorrect credentials!" });
 });
 
-router.get("/bulk", async (req, res) => {
+router.get("/bulk", authMiddleware, async (req, res) => {
     const data = req.query.filter;
     const filter = data || "";
-    console.log("here->", filter)
-    const foundUser = await userModel.find({
-        $or: [
-            {
-                first_name: {
-                    $regex: filter,
+    try {
+        const foundUser = await userModel.find({
+            $or: [
+                {
+                    first_name: {
+                        $regex: filter,
+                    },
                 },
-            },
-            {
-                last_name: {
-                    $regex: filter,
+                {
+                    last_name: {
+                        $regex: filter,
+                    },
                 },
-            },
-        ],
-    });
+                {
+                    username: {
+                        $regex: filter
+                    }
+                }
+            ],
+        });
 
-    res.status(200).json({
-        users: foundUser.map(user => ({
-            username: user.username,
-            first_name: user.first_name,
-            last_name: user.last_name,
-        }))
-    })
-
-
+        res.status(200).json({
+            users: foundUser.map(user => ({
+                username: user.username,
+                first_name: user.first_name,
+                last_name: user.last_name,
+                _id: user._id
+            }))
+        })
+    } catch (e) {
+        console.log(e)
+        return res.json({})
+    }
 });
 
 module.exports = router;
